@@ -1,0 +1,729 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HACKER ESCAPE ROOM: Zuordnungen verstehen (Klasse 7)</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    
+    <!-- KaTeX integration for math rendering -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js"></script>
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;600;700&family=Orbitron:wght@500;700;900&display=swap');
+        
+        body {
+            font-family: 'Fira Code', monospace;
+            background-color: #050811;
+            color: #00ff66;
+        }
+
+        .font-orbitron {
+            font-family: 'Orbitron', sans-serif;
+        }
+
+        /* Scanline Effect */
+        .scanlines {
+            background: linear-gradient(
+                rgba(18, 16, 16, 0) 50%, 
+                rgba(0, 0, 0, 0.25) 50%
+            ), linear-gradient(
+                90deg,
+                rgba(255, 0, 0, 0.03),
+                rgba(0, 255, 0, 0.01),
+                rgba(0, 0, 255, 0.03)
+            );
+            background-size: 100% 4px, 6px 100%;
+            pointer-events: none;
+        }
+
+        /* Glowing text & borders */
+        .glow-green {
+            text-shadow: 0 0 10px rgba(0, 255, 102, 0.7);
+        }
+        .glow-red {
+            text-shadow: 0 0 10px rgba(255, 50, 50, 0.7);
+        }
+        .box-glow {
+            box-shadow: 0 0 15px rgba(0, 255, 102, 0.2);
+            border: 1px solid rgba(0, 255, 102, 0.4);
+        }
+
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0d1322;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #00ff66;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between relative overflow-x-hidden selection:bg-green-500 selection:text-black">
+
+    <!-- Scanline Overlay -->
+    <div class="fixed inset-0 scanlines z-50 pointer-events-none"></div>
+
+    <!-- Background Grid -->
+    <div class="fixed inset-0 opacity-10 bg-[radial-gradient(#00ff66_1px,transparent_1px)] [background-size:16px_16px] pointer-events-none"></div>
+
+    <!-- Header / Status Bar -->
+    <header class="w-full bg-slate-950/80 border-b border-green-500/40 p-4 sticky top-0 z-40 backdrop-blur-md flex flex-wrap justify-between items-center gap-4">
+        <div class="flex items-center space-x-3">
+            <i class="fa-solid fa-terminal text-2xl text-green-400 animate-pulse"></i>
+            <div>
+                <h1 class="font-orbitron font-bold text-lg md:text-xl text-green-400 tracking-wider">CYBER_ESCAPE v7.0</h1>
+                <p class="text-xs text-green-600">STATUS: SYSTEM_SPERRE_DURCH_HACKER_ZERO</p>
+            </div>
+        </div>
+
+        <!-- Lock Progress Indicators -->
+        <div class="flex items-center space-x-4 bg-slate-900/90 px-4 py-2 rounded-lg border border-green-500/30">
+            <span class="text-xs text-slate-400 font-bold uppercase">Tür-Code:</span>
+            <div class="flex space-x-2">
+                <div id="digit1-badge" class="w-8 h-8 rounded bg-slate-800 border border-slate-700 flex items-center justify-center font-bold text-slate-500">?</div>
+                <div id="digit2-badge" class="w-8 h-8 rounded bg-slate-800 border border-slate-700 flex items-center justify-center font-bold text-slate-500">?</div>
+                <div id="digit3-badge" class="w-8 h-8 rounded bg-slate-800 border border-slate-700 flex items-center justify-center font-bold text-slate-500">?</div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="container mx-auto px-4 py-6 max-w-5xl flex-grow flex flex-col justify-center z-10">
+        
+        <!-- INTRO SCREEN -->
+        <section id="screen-intro" class="space-y-6">
+            <div class="bg-slate-900/90 p-6 md:p-8 rounded-xl box-glow space-y-6 border border-green-500/40">
+                <div class="flex items-center space-x-3 text-red-500 border-b border-red-500/30 pb-4">
+                    <i class="fa-solid fa-triangle-exclamation text-3xl animate-bounce"></i>
+                    <h2 class="font-orbitron text-2xl font-bold tracking-wide">ALARM: DAS BÜRO IST GESPERRT!</h2>
+                </div>
+                
+                <p class="text-slate-300 leading-relaxed text-sm md:text-base">
+                    Hallo 7. Klasse! Ich bin <span class="text-green-400 font-bold">Hacker Zero</span>. Ich habe die Raumtür digital verriegelt. 
+                    Ihr kommt hier erst wieder heraus, wenn ihr beweist, dass ihr **Zuordnungen verstehen, Tabellen ausfüllen und Diagramme lesen** könnt!
+                </p>
+
+                <div class="bg-black/60 p-4 rounded-lg border border-green-500/20 text-sm space-y-2">
+                    <p class="text-green-400 font-bold"><i class="fa-solid fa-shield-halved mr-2"></i>Eure Mission:</p>
+                    <ul class="list-disc list-inside text-slate-300 space-y-1 pl-2">
+                        <li>Löst 3 Rätsel zum Thema **Zuordnungen**.</li>
+                        <li>Jedes richtig gelöste Rätsel verrät euch **eine Ziffer des 3-stelligen Codes**.</li>
+                        <li>Gebt am Ende den Code am Türschloss ein, um die Tür zu knacken!</li>
+                    </ul>
+                </div>
+
+                <div class="pt-4 text-center">
+                    <button onclick="switchScreen('screen-puzzle1')" class="font-orbitron bg-green-500 hover:bg-green-400 text-slate-950 font-bold py-3 px-8 rounded-lg shadow-lg shadow-green-500/20 transition-all hover:scale-105 active:scale-95 flex items-center justify-center space-x-2 mx-auto">
+                        <span>MISSION STARTEN</span>
+                        <i class="fa-solid fa-arrow-right"></i>
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- PUZZLE 1: Wertetabellen (Gummibärchen kaufen) -->
+        <section id="screen-puzzle1" class="hidden space-y-6">
+            <div class="bg-slate-900/90 p-6 md:p-8 rounded-xl box-glow space-y-6">
+                <div class="flex justify-between items-center border-b border-green-500/30 pb-4">
+                    <div>
+                        <span class="text-xs text-green-500 font-bold uppercase tracking-wider">Rätsel 1 von 3</span>
+                        <h2 class="font-orbitron text-xl md:text-2xl font-bold text-white">Wertetabelle & Der Preis für 1 Stück</h2>
+                    </div>
+                    <i class="fa-solid fa-store text-3xl text-green-400"></i>
+                </div>
+
+                <!-- Info-Box Didaktik -->
+                <div class="bg-blue-950/40 p-4 rounded-lg border border-blue-500/30 text-xs md:text-sm text-blue-200">
+                    <span class="font-bold text-blue-400"><i class="fa-solid fa-lightbulb mr-1"></i> Was ist eine Zuordnung?</span>
+                    Eine Zuordnung verknüpft zwei Größen miteinander. Hier ordnen wir der <strong class="text-white">Anzahl an Gummibärchen-Tüten</strong> den <strong class="text-white">Gesamtpreis in €</strong> zu.
+                </div>
+
+                <p class="text-slate-300 text-sm md:text-base">
+                    Am Kiosk kostet jede Tüte Gummibärchen gleich viel. Schaue dir die Tabelle genau an und berechne die fehlenden Werte!
+                </p>
+
+                <!-- Table Challenge -->
+                <div class="overflow-x-auto">
+                    <table class="w-full text-center border-collapse border border-green-500/30 rounded-lg overflow-hidden text-sm md:text-base">
+                        <thead>
+                            <tr class="bg-slate-950 text-green-400">
+                                <th class="p-3 border border-green-500/30">Anzahl der Tüten (\(x\))</th>
+                                <th class="p-3 border border-green-500/30">1</th>
+                                <th class="p-3 border border-green-500/30">2</th>
+                                <th class="p-3 border border-green-500/30">4</th>
+                                <th class="p-3 border border-green-500/30">6</th>
+                            </tr>
+                        </thead>
+                        <tbody class="text-slate-200 bg-slate-900">
+                            <tr>
+                                <td class="p-3 border border-green-500/30 font-bold text-green-400">Gesamtpreis in € (\(y\))</td>
+                                <td class="p-3 border border-green-500/30 text-yellow-400 font-bold">Preis A</td>
+                                <td class="p-3 border border-green-500/30">3,00 €</td>
+                                <td class="p-3 border border-green-500/30 text-yellow-400 font-bold">Preis B</td>
+                                <td class="p-3 border border-green-500/30">9,00 €</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Questions -->
+                <div class="bg-slate-950/70 p-4 rounded-lg space-y-4 border border-green-500/20 text-sm">
+                    <h3 class="text-green-400 font-bold uppercase">Beantworte die Fragen:</h3>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-slate-300 mb-1">1. Wie viel kostet <strong>1 Tüte</strong> (Preis A in €)?</label>
+                            <input type="text" id="p1-input-a" autocomplete="off" class="w-full bg-slate-900 border border-slate-700 rounded p-2 text-green-400 focus:border-green-400 focus:outline-none">
+                        </div>
+
+                        <div>
+                            <label class="block text-slate-300 mb-1">2. Wie viel kosten <strong>4 Tüten</strong> (Preis B in €)?</label>
+                            <input type="text" id="p1-input-b" autocomplete="off" class="w-full bg-slate-900 border border-slate-700 rounded p-2 text-green-400 focus:border-green-400 focus:outline-none">
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-slate-300 mb-1">3. Welches ist das richtige Rechenmuster für diese Aufgabe?</label>
+                        <select id="p1-input-rule" class="w-full bg-slate-900 border border-slate-700 rounded p-2 text-green-400 focus:border-green-400 focus:outline-none">
+                            <option value="">-- Wähle die richtige Rechenregel --</option>
+                            <option value="multi">Gesamtpreis = Anzahl der Tüten mal 1,50 €</option>
+                            <option value="plus">Gesamtpreis = Anzahl der Tüten plus 1,50 €</option>
+                            <option value="durch">Gesamtpreis = Anzahl der Tüten geteilt durch 2</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Feedback Area -->
+                <div id="p1-feedback" class="hidden p-4 rounded-lg font-bold text-center"></div>
+
+                <!-- Footer Actions -->
+                <div class="flex justify-between items-center pt-4">
+                    <button onclick="switchScreen('screen-intro')" class="text-slate-400 hover:text-white text-sm flex items-center space-x-1">
+                        <i class="fa-solid fa-chevron-left"></i> <span>Zurück</span>
+                    </button>
+                    <button onclick="validatePuzzle1()" class="bg-green-500 hover:bg-green-400 text-slate-950 font-bold px-6 py-2.5 rounded-lg shadow-md transition-all">
+                        Antworten prüfen
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- PUZZLE 2: Weg-Zeit-Graph (E-Scooter Fahrt) -->
+        <section id="screen-puzzle2" class="hidden space-y-6">
+            <div class="bg-slate-900/90 p-6 md:p-8 rounded-xl box-glow space-y-6">
+                <div class="flex justify-between items-center border-b border-green-500/30 pb-4">
+                    <div>
+                        <span class="text-xs text-green-500 font-bold uppercase tracking-wider">Rätsel 2 von 3</span>
+                        <h2 class="font-orbitron text-xl md:text-2xl font-bold text-white">Diagramme lesen: Die Flucht auf dem E-Scooter</h2>
+                    </div>
+                    <i class="fa-solid fa-person-biking text-3xl text-green-400"></i>
+                </div>
+
+                <!-- Info-Box Didaktik -->
+                <div class="bg-blue-950/40 p-4 rounded-lg border border-blue-500/30 text-xs md:text-sm text-blue-200">
+                    <span class="font-bold text-blue-400"><i class="fa-solid fa-lightbulb mr-1"></i> Wie liest man ein Diagramm?</span>
+                    Auf der <strong>waagerechten Achse (unten)</strong> steht die verstrichene Zeit in Minuten. Auf der <strong>senkrechten Achse (links)</strong> steht der zurückgelegte Weg in Kilometern.
+                </div>
+
+                <p class="text-slate-300 text-sm md:text-base">
+                    Hacker Zero flieht auf einem E-Scooter. Der Graph zeigt seine Fahrt. Lerne den Graphen zu lesen, um herauszufinden, wo er sich versteckt!
+                </p>
+
+                <!-- SVG Graph Container -->
+                <div class="bg-slate-950 p-4 rounded-lg border border-green-500/30 flex justify-center items-center">
+                    <svg viewBox="0 0 500 300" class="w-full max-w-lg h-auto">
+                        <!-- Grid Lines -->
+                        <defs>
+                            <pattern id="grid" width="50" height="50" patternUnits="userSpaceOnUse">
+                                <path d="M 50 0 L 0 0 0 50" fill="none" stroke="#1e293b" stroke-width="1"/>
+                            </pattern>
+                        </defs>
+                        <rect width="400" height="240" x="50" y="10" fill="url(#grid)" />
+
+                        <!-- Axes -->
+                        <line x1="50" y1="250" x2="470" y2="250" stroke="#00ff66" stroke-width="2" />
+                        <line x1="50" y1="10" x2="50" y2="250" stroke="#00ff66" stroke-width="2" />
+                        
+                        <!-- Axis Labels -->
+                        <text x="380" y="285" fill="#00ff66" font-size="11" font-family="Fira Code">Zeit t (in Min)</text>
+                        <text x="12" y="20" fill="#00ff66" font-size="11" font-family="Fira Code" transform="rotate(-90 20,20)">Weg s (in km)</text>
+
+                        <!-- X Ticks (Zeit in Min) -->
+                        <text x="50" y="268" fill="#94a3b8" font-size="10" text-anchor="middle">0</text>
+                        <text x="150" y="268" fill="#94a3b8" font-size="10" text-anchor="middle">5</text>
+                        <text x="250" y="268" fill="#94a3b8" font-size="10" text-anchor="middle">10</text>
+                        <text x="350" y="268" fill="#94a3b8" font-size="10" text-anchor="middle">15</text>
+                        <text x="450" y="268" fill="#94a3b8" font-size="10" text-anchor="middle">20</text>
+
+                        <!-- Y Ticks (Weg in km) -->
+                        <text x="40" y="253" fill="#94a3b8" font-size="10" text-anchor="end">0</text>
+                        <text x="40" y="193" fill="#94a3b8" font-size="10" text-anchor="end">1</text>
+                        <text x="40" y="133" fill="#94a3b8" font-size="10" text-anchor="end">2</text>
+                        <text x="40" y="73" fill="#94a3b8" font-size="10" text-anchor="end">3</text>
+                        <text x="40" y="15" fill="#94a3b8" font-size="10" text-anchor="end">4</text>
+
+                        <!-- Plot Line: (0,0) -> (5 min, 2 km) -> (15 min, 2 km) -> (20 min, 4 km) -->
+                        <polyline points="50,250 150,133 350,133 450,15" fill="none" stroke="#38bdf8" stroke-width="3" stroke-linecap="round" />
+
+                        <!-- Points -->
+                        <circle cx="50" cy="250" r="4" fill="#00ff66"/>
+                        <circle cx="150" cy="133" r="4" fill="#00ff66"/>
+                        <circle cx="350" cy="133" r="4" fill="#00ff66"/>
+                        <circle cx="450" cy="15" r="4" fill="#00ff66"/>
+                    </svg>
+                </div>
+
+                <!-- Questions -->
+                <div class="bg-slate-950/70 p-4 rounded-lg space-y-4 border border-green-500/20 text-sm">
+                    <div>
+                        <label class="block text-slate-300 mb-1">1. Wie viele Kilometer (\(\text{km}\)) ist Hacker Zero in den ersten <strong>5 Minuten</strong> gefahren?</label>
+                        <div class="flex items-center space-x-2">
+                            <input type="text" id="p2-q1" autocomplete="off" class="w-full md:w-48 bg-slate-900 border border-slate-700 rounded p-2 text-green-400 focus:border-green-400 focus:outline-none">
+                            <span class="text-slate-400">\(\text{km}\)</span>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-slate-300 mb-1">2. Die Linie verläuft von Minute 5 bis Minute 15 waagerecht (flach). Was bedeutet das?</label>
+                        <select id="p2-q2" class="w-full bg-slate-900 border border-slate-700 rounded p-2 text-green-400 focus:border-green-400 focus:outline-none">
+                            <option value="">-- Wähle die passende Erklärung --</option>
+                            <option value="schneller">Er fährt doppelt so schnell wie vorher.</option>
+                            <option value="pause">Er macht eine Pause (der Weg verändert sich nicht).</option>
+                            <option value="zurueck">Er dreht um und fährt wieder zurück.</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-slate-300 mb-1">3. Wie viele <strong>Minuten</strong> hat diese Pause insgesamt gedauert?</label>
+                        <div class="flex items-center space-x-2">
+                            <input type="text" id="p2-q3" autocomplete="off" class="w-full md:w-48 bg-slate-900 border border-slate-700 rounded p-2 text-green-400 focus:border-green-400 focus:outline-none">
+                            <span class="text-slate-400">Minuten</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="p2-feedback" class="hidden p-4 rounded-lg font-bold text-center"></div>
+
+                <div class="flex justify-between items-center pt-4">
+                    <button onclick="switchScreen('screen-puzzle1')" class="text-slate-400 hover:text-white text-sm flex items-center space-x-1">
+                        <i class="fa-solid fa-chevron-left"></i> <span>Zurück zu Rätsel 1</span>
+                    </button>
+                    <button onclick="validatePuzzle2()" class="bg-green-500 hover:bg-green-400 text-slate-950 font-bold px-6 py-2.5 rounded-lg shadow-md transition-all">
+                        Antworten prüfen
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- PUZZLE 3: Muster erkennen (Je mehr... desto...) -->
+        <section id="screen-puzzle3" class="hidden space-y-6">
+            <div class="bg-slate-900/90 p-6 md:p-8 rounded-xl box-glow space-y-6">
+                <div class="flex justify-between items-center border-b border-green-500/30 pb-4">
+                    <div>
+                        <span class="text-xs text-green-500 font-bold uppercase tracking-wider">Rätsel 3 von 3</span>
+                        <h2 class="font-orbitron text-xl md:text-2xl font-bold text-white">Muster erkennen: Welche Regel passt?</h2>
+                    </div>
+                    <i class="fa-solid fa-arrows-split-up-and-left text-3xl text-green-400"></i>
+                </div>
+
+                <!-- Info-Box Didaktik -->
+                <div class="bg-blue-950/40 p-4 rounded-lg border border-blue-500/30 text-xs md:text-sm text-blue-200 space-y-1">
+                    <span class="font-bold text-blue-400"><i class="fa-solid fa-lightbulb mr-1"></i> Es gibt verschiedene Typen von Zuordnungen:</span>
+                    <p>• <strong>„Je mehr ..., desto mehr ...“ (Gleichmäßig):</strong> Doppelt so viele Artikel kosten auch genau doppelt so viel.</p>
+                    <p>• <strong>„Je mehr ..., desto weniger …“ (Verteilen):</strong> Doppelt so viele Helfer brauchen nur halb so viel Zeit.</p>
+                    <p>• <strong>Zufall / Kein festes Muster:</strong> Wenn kein genauer mathematischer Zusammenhang besteht.</p>
+                </div>
+
+                <p class="text-slate-300 text-sm md:text-base">
+                    Ordne die 3 Alltagssituationen dem passenden Muster zu:
+                </p>
+
+                <!-- Scenarios -->
+                <div class="space-y-4 text-sm">
+                    <!-- Scenario 1 -->
+                    <div class="bg-slate-950 p-4 rounded-lg border border-slate-800 space-y-2">
+                        <p class="text-slate-200 font-semibold">
+                            <i class="fa-solid fa-ticket text-green-400 mr-2"></i>
+                            Situation A: Kinokarten kaufen (\(1\text{ Karte} = 8\text{ €}\), \(2\text{ Karten} = 16\text{ €}\), \(3\text{ Karten} = 24\text{ €}\))
+                        </p>
+                        <select id="p3-sc1" class="w-full bg-slate-900 border border-slate-700 rounded p-2 text-green-400 focus:border-green-400 focus:outline-none">
+                            <option value="">-- Regel auswählen --</option>
+                            <option value="je-mehr-mehr">„Je mehr Karten, desto mehr Gesamtkosten“ (Gleichmäßig / Proportional)</option>
+                            <option value="je-mehr-weniger">„Je mehr Karten, desto weniger Gesamtkosten“</option>
+                            <option value="zufall">Kein festes Muster / Zufall</option>
+                        </select>
+                    </div>
+
+                    <!-- Scenario 2 -->
+                    <div class="bg-slate-950 p-4 rounded-lg border border-slate-800 space-y-2">
+                        <p class="text-slate-200 font-semibold">
+                            <i class="fa-solid fa-broom text-green-400 mr-2"></i>
+                            Situation B: Klassenzimmer aufräumen (\(2\text{ Schüler} = 30\text{ Minuten}\), \(4\text{ Schüler} = 15\text{ Minuten}\))
+                        </p>
+                        <select id="p3-sc2" class="w-full bg-slate-900 border border-slate-700 rounded p-2 text-green-400 focus:border-green-400 focus:outline-none">
+                            <option value="">-- Regel auswählen --</option>
+                            <option value="je-mehr-mehr">„Je mehr Helfer, desto mehr Benötigte Zeit“</option>
+                            <option value="je-mehr-weniger">„Je mehr Helfer, desto weniger Zeit brauchen sie“ (Verteilen / Antiproportional)</option>
+                            <option value="zufall">Kein festes Muster / Zufall</option>
+                        </select>
+                    </div>
+
+                    <!-- Scenario 3 -->
+                    <div class="bg-slate-950 p-4 rounded-lg border border-slate-800 space-y-2">
+                        <p class="text-slate-200 font-semibold">
+                            <i class="fa-solid fa-ruler-vertical text-green-400 mr-2"></i>
+                            Situation C: Alter eines Schülers \(\rightarrow\) Körpergröße in \(\text{cm}\)
+                        </p>
+                        <select id="p3-sc3" class="w-full bg-slate-900 border border-slate-700 rounded p-2 text-green-400 focus:border-green-400 focus:outline-none">
+                            <option value="">-- Regel auswählen --</option>
+                            <option value="je-mehr-mehr">„Je älter, desto doppelt so groß“ (Exakt gleichmäßig)</option>
+                            <option value="je-mehr-weniger">„Je älter, desto kleiner“</option>
+                            <option value="zufall">Kein festes gleichmäßiges Muster (Man wächst nicht ewig doppelt so schnell)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div id="p3-feedback" class="hidden p-4 rounded-lg font-bold text-center"></div>
+
+                <div class="flex justify-between items-center pt-4">
+                    <button onclick="switchScreen('screen-puzzle2')" class="text-slate-400 hover:text-white text-sm flex items-center space-x-1">
+                        <i class="fa-solid fa-chevron-left"></i> <span>Zurück zu Rätsel 2</span>
+                    </button>
+                    <button onclick="validatePuzzle3()" class="bg-green-500 hover:bg-green-400 text-slate-950 font-bold px-6 py-2.5 rounded-lg shadow-md transition-all">
+                        Antworten prüfen
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- LOCK & KEYPAD SCREEN -->
+        <section id="screen-lock" class="hidden space-y-6">
+            <div class="bg-slate-900/90 p-6 md:p-8 rounded-xl box-glow space-y-6 max-w-md mx-auto text-center border border-green-500/40">
+                <div class="flex flex-col items-center justify-center space-y-2">
+                    <div class="w-16 h-16 rounded-full bg-slate-950 border border-green-500/50 flex items-center justify-center text-green-400 text-2xl shadow-lg">
+                        <i class="fa-solid fa-lock" id="lock-icon"></i>
+                    </div>
+                    <h2 class="font-orbitron text-xl font-bold text-white">DIGITALES TÜRSCHLOSS</h2>
+                    <p class="text-xs text-slate-400">Gib die 3 ermittelten Code-Ziffern ein</p>
+                </div>
+
+                <!-- Code Display -->
+                <div class="flex justify-center space-x-4 my-6">
+                    <input type="text" id="code-digit-1" maxlength="1" readonly class="w-14 h-16 bg-slate-950 border-2 border-green-500/50 text-center font-orbitron text-3xl font-bold text-green-400 rounded-lg shadow-inner focus:outline-none">
+                    <input type="text" id="code-digit-2" maxlength="1" readonly class="w-14 h-16 bg-slate-950 border-2 border-green-500/50 text-center font-orbitron text-3xl font-bold text-green-400 rounded-lg shadow-inner focus:outline-none">
+                    <input type="text" id="code-digit-3" maxlength="1" readonly class="w-14 h-16 bg-slate-950 border-2 border-green-500/50 text-center font-orbitron text-3xl font-bold text-green-400 rounded-lg shadow-inner focus:outline-none">
+                </div>
+
+                <!-- Keypad -->
+                <div class="grid grid-cols-3 gap-3 max-w-xs mx-auto">
+                    <button onclick="pressKey('1')" class="bg-slate-800 hover:bg-slate-700 active:bg-green-500 text-green-400 active:text-slate-950 font-bold py-3 rounded-lg border border-slate-700 transition">1</button>
+                    <button onclick="pressKey('2')" class="bg-slate-800 hover:bg-slate-700 active:bg-green-500 text-green-400 active:text-slate-950 font-bold py-3 rounded-lg border border-slate-700 transition">2</button>
+                    <button onclick="pressKey('3')" class="bg-slate-800 hover:bg-slate-700 active:bg-green-500 text-green-400 active:text-slate-950 font-bold py-3 rounded-lg border border-slate-700 transition">3</button>
+                    <button onclick="pressKey('4')" class="bg-slate-800 hover:bg-slate-700 active:bg-green-500 text-green-400 active:text-slate-950 font-bold py-3 rounded-lg border border-slate-700 transition">4</button>
+                    <button onclick="pressKey('5')" class="bg-slate-800 hover:bg-slate-700 active:bg-green-500 text-green-400 active:text-slate-950 font-bold py-3 rounded-lg border border-slate-700 transition">5</button>
+                    <button onclick="pressKey('6')" class="bg-slate-800 hover:bg-slate-700 active:bg-green-500 text-green-400 active:text-slate-950 font-bold py-3 rounded-lg border border-slate-700 transition">6</button>
+                    <button onclick="pressKey('7')" class="bg-slate-800 hover:bg-slate-700 active:bg-green-500 text-green-400 active:text-slate-950 font-bold py-3 rounded-lg border border-slate-700 transition">7</button>
+                    <button onclick="pressKey('8')" class="bg-slate-800 hover:bg-slate-700 active:bg-green-500 text-green-400 active:text-slate-950 font-bold py-3 rounded-lg border border-slate-700 transition">8</button>
+                    <button onclick="pressKey('9')" class="bg-slate-800 hover:bg-slate-700 active:bg-green-500 text-green-400 active:text-slate-950 font-bold py-3 rounded-lg border border-slate-700 transition">9</button>
+                    <button onclick="clearKeypad()" class="bg-red-950/50 hover:bg-red-900 text-red-400 font-bold py-3 rounded-lg border border-red-800 transition">C</button>
+                    <button onclick="pressKey('0')" class="bg-slate-800 hover:bg-slate-700 active:bg-green-500 text-green-400 active:text-slate-950 font-bold py-3 rounded-lg border border-slate-700 transition">0</button>
+                    <button onclick="submitCode()" class="bg-green-500 hover:bg-green-400 text-slate-950 font-bold py-3 rounded-lg border border-green-400 transition">
+                        <i class="fa-solid fa-key"></i>
+                    </button>
+                </div>
+
+                <div id="lock-feedback" class="text-sm font-bold h-6"></div>
+
+                <div class="flex justify-between items-center pt-4 border-t border-slate-800 text-xs">
+                    <button onclick="switchScreen('screen-puzzle3')" class="text-slate-400 hover:text-white">
+                        <i class="fa-solid fa-chevron-left"></i> Rätsel 3
+                    </button>
+                    <span class="text-slate-500">SYSTEM_READY</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- VICTORY & SUMMARY SCREEN -->
+        <section id="screen-victory" class="hidden space-y-6">
+            <div class="bg-slate-900/95 p-6 md:p-8 rounded-xl box-glow space-y-6 border border-green-500/60">
+                <div class="text-center space-y-3 border-b border-green-500/30 pb-6">
+                    <div class="inline-flex p-4 rounded-full bg-green-500/10 border border-green-500 text-green-400 text-4xl mb-2">
+                        <i class="fa-solid fa-door-open"></i>
+                    </div>
+                    <h2 class="font-orbitron text-2xl md:text-3xl font-extrabold text-green-400 glow-green">
+                        GESCHAFFT! DIE TÜR IST OFFEN!
+                    </h2>
+                    <p class="text-slate-300 text-sm md:text-base">
+                        Hacker Zero hat keine Chance mehr. Ihr habt alle 3 Rätsel gelöst und bewiesen, dass ihr euch mit Zuordnungen bestens auskennt!
+                    </p>
+                </div>
+
+                <!-- Learning Summary for Grade 7 -->
+                <div class="space-y-4">
+                    <h3 class="font-orbitron text-lg font-bold text-white flex items-center space-x-2">
+                        <i class="fa-solid fa-graduation-cap text-green-400"></i>
+                        <span>Das Wichtigste zu Zuordnungen (Merke dir!)</span>
+                    </h3>
+
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs md:text-sm">
+                        <!-- Box 1 -->
+                        <div class="bg-slate-950 p-4 rounded-lg border border-green-500/30 space-y-2">
+                            <h4 class="font-bold text-green-400 flex items-center space-x-1">
+                                <i class="fa-solid fa-table"></i>
+                                <span>1. Was ist eine Zuordnung?</span>
+                            </h4>
+                            <p class="text-slate-300 leading-relaxed">
+                                Eine Zuordnung verknüpft zwei Größen miteinander (z. B. <em>Anzahl der Tüten</em> \(\rightarrow\) <em>Preis</em>). Eine Wertetabelle hilft dir, diese Paare übersichtlich aufzuschreiben.
+                            </p>
+                        </div>
+
+                        <!-- Box 2 -->
+                        <div class="bg-slate-950 p-4 rounded-lg border border-green-500/30 space-y-2">
+                            <h4 class="font-bold text-green-400 flex items-center space-x-1">
+                                <i class="fa-solid fa-chart-line"></i>
+                                <span>2. Diagramme verstehen</span>
+                            </h4>
+                            <p class="text-slate-300 leading-relaxed">
+                                • <strong>Steile Linie:</strong> Es verändert sich schnell etwas.
+                                <br>• <strong>Waagerechte (flache) Linie:</strong> Stillstand / Pause (der Wert bleibt gleich).
+                            </p>
+                        </div>
+
+                        <!-- Box 3 -->
+                        <div class="bg-slate-950 p-4 rounded-lg border border-green-500/30 space-y-2">
+                            <h4 class="font-bold text-green-400 flex items-center space-x-1">
+                                <i class="fa-solid fa-arrows-split-up-and-left"></i>
+                                <span>3. Die zwei Hauptregeln</span>
+                            </h4>
+                            <p class="text-slate-300 leading-relaxed">
+                                • <strong>„Je mehr …, desto mehr …“</strong> (Doppelte Menge \(\rightarrow\) doppelter Preis).
+                                <br>• <strong>„Je mehr …, desto weniger …“</strong> (Doppelt so viele Helfer \(\rightarrow\) halbe Zeit).
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Reset Game Button -->
+                <div class="pt-4 text-center">
+                    <button onclick="restartGame()" class="bg-slate-800 hover:bg-slate-700 text-green-400 font-bold px-6 py-3 rounded-lg border border-green-500/40 transition">
+                        <i class="fa-solid fa-rotate-right mr-2"></i> Noch einmal spielen
+                    </button>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Navigation Footer -->
+    <footer class="w-full bg-slate-950 border-t border-slate-800 p-4 z-40">
+        <div class="container mx-auto max-w-5xl flex flex-wrap justify-between items-center gap-4 text-xs text-slate-500">
+            <div>
+                <span class="text-green-500 font-bold">ESCAPE ROOM:</span> Zuordnungen darstellen und verstehen (Klasse 7)
+            </div>
+            <!-- Quick Navigation Buttons -->
+            <div class="flex space-x-2">
+                <button onclick="switchScreen('screen-puzzle1')" class="px-2.5 py-1 rounded bg-slate-900 border border-slate-700 hover:text-green-400">Rätsel 1</button>
+                <button onclick="switchScreen('screen-puzzle2')" class="px-2.5 py-1 rounded bg-slate-900 border border-slate-700 hover:text-green-400">Rätsel 2</button>
+                <button onclick="switchScreen('screen-puzzle3')" class="px-2.5 py-1 rounded bg-slate-900 border border-slate-700 hover:text-green-400">Rätsel 3</button>
+                <button onclick="switchScreen('screen-lock')" class="px-2.5 py-1 rounded bg-slate-900 border border-slate-700 hover:text-green-400 text-yellow-500">
+                    <i class="fa-solid fa-lock mr-1"></i>Schloss
+                </button>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Logic JavaScript -->
+    <script>
+        // TARGET CODE DIGITS:
+        // Puzzle 1 (Preis A für 1 Tüte = 1.5): Digit = 1 (or rounded rule digit) -> Target Code Solution: 1 - 5 - 3
+        // Puzzle 1 digit: 1
+        // Puzzle 2 digit: 5
+        // Puzzle 3 digit: 3
+        // SOLUTION CODE: 1 - 5 - 3
+
+        const TARGET_CODE = ["1", "5", "3"];
+        let solvedPuzzles = [false, false, false];
+        let currentCodeInput = ["", "", ""];
+
+        // Helper function for inputs with dot or comma
+        function parseNumInput(id) {
+            const el = document.getElementById(id);
+            if (!el) return NaN;
+            const strVal = el.value.trim().replace(',', '.');
+            return parseFloat(strVal);
+        }
+
+        // Render KaTeX after page load
+        document.addEventListener("DOMContentLoaded", function() {
+            renderMathInElement(document.body, {
+                delimiters: [
+                    {left: "\\(", right: "\\)", display: false},
+                    {left: "\\[", right: "\\]", display: true}
+                ],
+                throwOnError : false
+            });
+        });
+
+        function switchScreen(screenId) {
+            const screens = ['screen-intro', 'screen-puzzle1', 'screen-puzzle2', 'screen-puzzle3', 'screen-lock', 'screen-victory'];
+            screens.forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.classList.add('hidden');
+            });
+            const target = document.getElementById(screenId);
+            if (target) target.classList.remove('hidden');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function updateProgressBadge(puzzleIndex, digitValue) {
+            solvedPuzzles[puzzleIndex - 1] = true;
+            const badge = document.getElementById(`digit${puzzleIndex}-badge`);
+            if (badge) {
+                badge.innerText = digitValue;
+                badge.classList.remove('bg-slate-800', 'text-slate-500', 'border-slate-700');
+                badge.classList.add('bg-green-500/20', 'text-green-400', 'border-green-500', 'glow-green');
+            }
+        }
+
+        // Validate Puzzle 1
+        function validatePuzzle1() {
+            const valA = parseNumInput('p1-input-a'); // 1.50
+            const valB = parseNumInput('p1-input-b'); // 6.00
+            const rule = document.getElementById('p1-input-rule').value; // 'multi'
+            const feedback = document.getElementById('p1-feedback');
+
+            if (valA === 1.5 && valB === 6 && rule === 'multi') {
+                feedback.className = "p-4 rounded-lg font-bold text-center bg-green-950/60 text-green-400 border border-green-500/50 block";
+                feedback.innerHTML = `<i class="fa-solid fa-check-circle mr-2"></i> RICHTIG! Die 1. Code-Ziffer lautet: <span class="text-2xl text-white font-orbitron underline">1</span>`;
+                updateProgressBadge(1, "1");
+                
+                setTimeout(() => {
+                    switchScreen('screen-puzzle2');
+                }, 2000);
+            } else {
+                feedback.className = "p-4 rounded-lg font-bold text-center bg-red-950/60 text-red-400 border border-red-500/50 block";
+                feedback.innerHTML = `<i class="fa-solid fa-xmark-circle mr-2"></i> NOCH NICHT GANZ! Tipp: Wenn 2 Tüten 3,00 € kosten, wie viel kostet dann 1 Tüte?`;
+            }
+        }
+
+        // Validate Puzzle 2
+        function validatePuzzle2() {
+            const q1 = parseNumInput('p2-q1'); // 2 km
+            const q2 = document.getElementById('p2-q2').value; // 'pause'
+            const q3 = parseNumInput('p2-q3'); // 10 Min (15 - 5)
+            const feedback = document.getElementById('p2-feedback');
+
+            if (q1 === 2 && q2 === 'pause' && q3 === 10) {
+                feedback.className = "p-4 rounded-lg font-bold text-center bg-green-950/60 text-green-400 border border-green-500/50 block";
+                feedback.innerHTML = `<i class="fa-solid fa-check-circle mr-2"></i> SUPER GELESEN! Die 2. Code-Ziffer lautet: <span class="text-2xl text-white font-orbitron underline">5</span>`;
+                updateProgressBadge(2, "5");
+
+                setTimeout(() => {
+                    switchScreen('screen-puzzle3');
+                }, 2000);
+            } else {
+                feedback.className = "p-4 rounded-lg font-bold text-center bg-red-950/60 text-red-400 border border-red-500/50 block";
+                feedback.innerHTML = `<i class="fa-solid fa-xmark-circle mr-2"></i> SCHAU NOCK EINMAL HIN! Lies an der senkrechten Achse ab, wie weit er nach 5 Minuten gefahren ist.`;
+            }
+        }
+
+        // Validate Puzzle 3
+        function validatePuzzle3() {
+            const sc1 = document.getElementById('p3-sc1').value; // 'je-mehr-mehr'
+            const sc2 = document.getElementById('p3-sc2').value; // 'je-mehr-weniger'
+            const sc3 = document.getElementById('p3-sc3').value; // 'zufall'
+            const feedback = document.getElementById('p3-feedback');
+
+            if (sc1 === 'je-mehr-mehr' && sc2 === 'je-mehr-weniger' && sc3 === 'zufall') {
+                feedback.className = "p-4 rounded-lg font-bold text-center bg-green-950/60 text-green-400 border border-green-500/50 block";
+                feedback.innerHTML = `<i class="fa-solid fa-check-circle mr-2"></i> KLASSE! Die 3. Code-Ziffer lautet: <span class="text-2xl text-white font-orbitron underline">3</span>`;
+                updateProgressBadge(3, "3");
+
+                setTimeout(() => {
+                    switchScreen('screen-lock');
+                }, 2000);
+            } else {
+                feedback.className = "p-4 rounded-lg font-bold text-center bg-red-950/60 text-red-400 border border-red-500/50 block";
+                feedback.innerHTML = `<i class="fa-solid fa-xmark-circle mr-2"></i> ÜBERPRÜFE NOCHMAL: Bei Situation B bedeuten mehr Helfer weniger Zeit!`;
+            }
+        }
+
+        // Keypad Logic
+        function pressKey(num) {
+            for (let i = 0; i < 3; i++) {
+                if (currentCodeInput[i] === "") {
+                    currentCodeInput[i] = num;
+                    document.getElementById(`code-digit-${i+1}`).value = num;
+                    break;
+                }
+            }
+        }
+
+        function clearKeypad() {
+            currentCodeInput = ["", "", ""];
+            for (let i = 1; i <= 3; i++) {
+                document.getElementById(`code-digit-${i}`).value = "";
+            }
+            document.getElementById('lock-feedback').innerText = "";
+        }
+
+        function submitCode() {
+            const feedback = document.getElementById('lock-feedback');
+            const entered = currentCodeInput.join("");
+            const target = TARGET_CODE.join("");
+
+            if (entered === target) {
+                feedback.className = "text-sm font-bold text-green-400 glow-green";
+                feedback.innerText = "CODE STIMMT! SCHLOSS WIRD ENTRIEGELT...";
+                document.getElementById('lock-icon').className = "fa-solid fa-lock-open text-green-400 animate-bounce";
+                
+                setTimeout(() => {
+                    switchScreen('screen-victory');
+                }, 1500);
+            } else {
+                feedback.className = "text-sm font-bold text-red-500 glow-red";
+                feedback.innerText = "FALSCHER CODE! PRÜFE EURE ZIFFERN!";
+                clearKeypad();
+            }
+        }
+
+        function restartGame() {
+            solvedPuzzles = [false, false, false];
+            currentCodeInput = ["", "", ""];
+            
+            for(let i = 1; i <= 3; i++) {
+                const badge = document.getElementById(`digit${i}-badge`);
+                badge.innerText = "?";
+                badge.className = "w-8 h-8 rounded bg-slate-800 border border-slate-700 flex items-center justify-center font-bold text-slate-500";
+                document.getElementById(`code-digit-${i}`).value = "";
+            }
+
+            document.getElementById('p1-input-a').value = "";
+            document.getElementById('p1-input-b').value = "";
+            document.getElementById('p1-input-rule').value = "";
+            document.getElementById('p1-feedback').className = "hidden";
+
+            document.getElementById('p2-q1').value = "";
+            document.getElementById('p2-q2').value = "";
+            document.getElementById('p2-q3').value = "";
+            document.getElementById('p2-feedback').className = "hidden";
+
+            document.getElementById('p3-sc1').value = "";
+            document.getElementById('p3-sc2').value = "";
+            document.getElementById('p3-sc3').value = "";
+            document.getElementById('p3-feedback').className = "hidden";
+
+            document.getElementById('lock-icon').className = "fa-solid fa-lock";
+            document.getElementById('lock-feedback').innerText = "";
+
+            switchScreen('screen-intro');
+        }
+    </script>
+</body>
+</html>
